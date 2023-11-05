@@ -60,8 +60,7 @@ namespace LibFenris.DataManagement
                     catch (MagickException e)
                     {
                         // Fall back to DDS if processing failed
-                        Console.WriteLine($"Failed to process {kvp.Key}, falling back to DDS");
-                        //Console.WriteLine(e.ToString());
+                        Console.WriteLine($"Failed to process {kvp.Key} ({e.Message}), falling back to DDS");
                         File.WriteAllBytes(Path.Combine(imagePath, $"{kvp.Key}.dds"), ddsTexture);
                     }
                 }
