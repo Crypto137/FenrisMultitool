@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34024.191
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FenrisMultitool", "src\FenrisMultitool\FenrisMultitool.csproj", "{D38C0764-B2E3-450E-BEBC-BFB9E9930316}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibFenris", "src\LibFenris\LibFenris.csproj", "{ECCCDA1D-D13A-465E-AAA1-39E0E5AD9686}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D38C0764-B2E3-450E-BEBC-BFB9E9930316}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D38C0764-B2E3-450E-BEBC-BFB9E9930316}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D38C0764-B2E3-450E-BEBC-BFB9E9930316}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D38C0764-B2E3-450E-BEBC-BFB9E9930316}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ECCCDA1D-D13A-465E-AAA1-39E0E5AD9686}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ECCCDA1D-D13A-465E-AAA1-39E0E5AD9686}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ECCCDA1D-D13A-465E-AAA1-39E0E5AD9686}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ECCCDA1D-D13A-465E-AAA1-39E0E5AD9686}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A8281878-9328-4CB9-B8DD-9F5AA0DB0FD1}
+	EndGlobalSection
+EndGlobal
