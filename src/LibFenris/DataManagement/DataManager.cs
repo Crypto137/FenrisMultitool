@@ -6,7 +6,7 @@ namespace LibFenris.DataManagement
     public class DataManager
     {
         private readonly Dictionary<string, StringList> _stringListDict = new();
-        private readonly Dictionary<string, Texture> _textureDict = new();
+        private readonly Dictionary<string, ITexture> _textureDict = new();
 
         public void ParseFiles(string[] paths)
         {
@@ -60,8 +60,20 @@ namespace LibFenris.DataManagement
 
                     switch (header.FormatHash)
                     {
-                        case SnoFormatDefinition.StringList: ReadStringList(reader, path); break;
-                        case SnoFormatDefinition.Texture: ReadTexture(reader, path); break;
+                        case SnoFormatDefinition.StringList118:
+                        case SnoFormatDefinition.StringList119:
+                        case SnoFormatDefinition.StringList121:
+                            ReadStringList(reader, path);
+                            break;
+
+                        case SnoFormatDefinition.Texture:
+                            ReadTexture(reader, path);
+                            break;
+
+                        case SnoFormatDefinition.TextureBeta:
+                            ReadTexture(reader, path, true);
+                            break;
+
                         default: throw new NotImplementedException($"Unsupported SNO file type: {header.FormatHash}.");
                     }
                 }
@@ -79,14 +91,14 @@ namespace LibFenris.DataManagement
             _stringListDict.Add(name, stringList);
         }
 
-        private void ReadTexture(BinaryReader reader, string path)
+        private void ReadTexture(BinaryReader reader, string path, bool useBetaFormat = false)
         {
             string name = Path.GetFileNameWithoutExtension(path);
             string payloadPath = Path.Combine(Path.GetDirectoryName(path), "..", "..", "payload", "Texture", $"{name}.tex");
 
             if (File.Exists(payloadPath) == false) throw new($"Payload for {name} not found.");
 
-            Texture texture = new(reader);
+            ITexture texture = useBetaFormat ? new TextureBeta(reader) : new Texture(reader);
             texture.PayloadPath = payloadPath;
             _textureDict.Add(name, texture);
         }

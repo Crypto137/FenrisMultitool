@@ -1,20 +1,21 @@
-﻿using ImageMagick;
+﻿using System.Text;
+using ImageMagick;
 
 namespace LibFenris.FileFormats
 {
-    public class Texture : ITexture
+    public class TextureBeta : ITexture
     {
         public int SnoId { get; }
 
         public int TexFormat { get; }               // enum
-        public ushort VolumeXSlices { get; }
-        public ushort VolumeYSlices { get; }
-        public ushort Width { get; }
-        public ushort Height { get; }
+        public uint VolumeXSlices { get; }
+        public uint VolumeYSlices { get; }
+        public uint Width { get; }
+        public uint Height { get; }
         public uint Depth { get; }
-        public byte FaceCount { get; }
-        public byte MipMapLevelMin { get; }
-        public byte MipMapLevelMax { get; }
+        public uint FaceCount { get; }
+        public ushort MipMapLevelMin { get; }
+        public ushort MipMapLevelMax { get; }
         public int ImportFlags { get; }
         public int TextureResourceType { get; }     // enum
         public Rgba AverageColor { get; }
@@ -25,21 +26,21 @@ namespace LibFenris.FileFormats
 
         public string PayloadPath { get; set; }
 
-        public Texture(BinaryReader reader)
+        public TextureBeta(BinaryReader reader)
         {
             SnoId = reader.ReadInt32();
             reader.BaseStream.Position += 4;
 
             TexFormat = reader.ReadInt32();
-            VolumeXSlices = reader.ReadUInt16();
-            VolumeYSlices = reader.ReadUInt16();
-            Width = reader.ReadUInt16();
-            Height = reader.ReadUInt16();
+            reader.BaseStream.Position += 4;
+            VolumeXSlices = reader.ReadUInt32();
+            VolumeYSlices = reader.ReadUInt32();
+            Width = reader.ReadUInt32();
+            Height = reader.ReadUInt32();
             Depth = reader.ReadUInt32();
-            FaceCount = reader.ReadByte();
-            MipMapLevelMin = reader.ReadByte();
-            MipMapLevelMax = reader.ReadByte();
-            reader.BaseStream.Position++;           // Padding byte
+            FaceCount = reader.ReadUInt32();
+            MipMapLevelMin = reader.ReadUInt16();
+            MipMapLevelMax = reader.ReadUInt16();
             ImportFlags = reader.ReadInt32();
             TextureResourceType = reader.ReadInt32();
             AverageColor = new(reader);
@@ -56,9 +57,11 @@ namespace LibFenris.FileFormats
             // Read frames
             SerializeData serFrames = new(reader);
             reader.BaseStream.Position = SnoFileHeader.Size + serFrames.Offset;
-            Frames = new ITexFrame[serFrames.SizeAndFlags / 36];   // Each frame is 36 bytes
+            Frames = new ITexFrame[serFrames.SizeAndFlags / 100];   // Each frame is 100 bytes
             for (int i = 0; i < Frames.Length; i++)
-                Frames[i] = new TexFrame(reader);
+                Frames[i] = new TexFrameBeta(reader);
+
+            // unknown dword @ 0xb0
         }
 
         public MagickGeometry[] CalculateMagickRects()
@@ -81,23 +84,24 @@ namespace LibFenris.FileFormats
         }
     }
 
-    public class TexFrame : ITexFrame
+    public class TexFrameBeta : ITexFrame
     {
-        public object ImageHandle { get; }    // Some kind of hash that replaced frame name.
+        public object ImageHandle { get; }
         public float U0 { get; }
         public float V0 { get; }
         public float U1 { get; }
         public float V1 { get; }
-
-        // UVs are repeated for some reason. In D3 there used to be pixel perfect coordinates here.
         public float TrimU0 { get; }
         public float TrimV0 { get; }
         public float TrimU1 { get; }
         public float TrimV1 { get; }
 
-        public TexFrame(BinaryReader reader)
+        public TexFrameBeta(BinaryReader reader)
         {
-            ImageHandle = reader.ReadUInt32();
+            // Image handle contains white spice at the end and invalid path characters, so we process it a bit here
+            string rawImageHandle = Encoding.UTF8.GetString(reader.ReadBytes(68));
+            ImageHandle = string.Concat(rawImageHandle.Split(Path.GetInvalidFileNameChars()));
+
             U0 = reader.ReadSingle();
             V0 = reader.ReadSingle();
             U1 = reader.ReadSingle();

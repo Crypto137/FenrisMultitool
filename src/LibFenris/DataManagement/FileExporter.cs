@@ -28,13 +28,18 @@ namespace LibFenris.DataManagement
             }
         }
 
-        public static void ExportTextureDict(Dictionary<string, Texture> textureDict, string path)
+        public static void ExportTextureDict(Dictionary<string, ITexture> textureDict, string path)
         {
             foreach (var kvp in textureDict)
             {
                 try
                 {
-                    byte[] ddsTexture = TextureConverter.ConvertRawTexture(kvp.Value);
+                    byte[] ddsTexture = kvp.Value switch
+                    {
+                        Texture texture => TextureConverter.ConvertRawTexture(texture),
+                        TextureBeta textureBeta => TextureConverter.ConvertRawTextureBeta(textureBeta),
+                        _ => throw new("Unsupported texture format."),
+                    };
 
                     string imagePath = Path.Combine(path, kvp.Key);
                     if (Directory.Exists(imagePath) == false) Directory.CreateDirectory(imagePath);

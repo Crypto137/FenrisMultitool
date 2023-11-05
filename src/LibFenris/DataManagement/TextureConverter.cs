@@ -211,31 +211,55 @@ namespace LibFenris.DataManagement
             using (BinaryWriter writer = new(ms))
             {
                 // DDS header
-                writer.Write((int)Magic.DDS);           // Magic
+                WriteDdsHeader(writer, width, height, count, fourCC, index);
 
-                writer.Write(124);                      // Size
-                writer.Write(0x1 | 0x2 | 0x4 | 0x1000); // Flags
-                writer.Write(height);                   // Height
-                writer.Write(width);                    // Width
-                writer.Write(count);                    // Pitch or linear size
-                writer.Write(0);                        // Depth
-                writer.Write(1);                        // Mip map count
+                // Payload
+                writer.BaseStream.Position = headerSize;
+                writer.Write(payload);
 
-                writer.BaseStream.Position = 76;
-                writer.Write(32);                       // ddspf size
-                writer.Write(4);                        // ddspf flags
-                writer.Write((int)fourCC);              // ddspf fourCC
+                return ms.ToArray();
+            }
+        }
 
-                // Extended DX10 header
-                if (fourCC == Magic.DX10)
-                {
-                    writer.BaseStream.Position = 128;
-                    writer.Write(index);                // DXGI
-                    writer.Write(3);                    // Resource dimension
-                    writer.Write(0);                    // Misc flag
-                    writer.Write(1);                    // Array size
-                    writer.Write(0);                    // Misc flag 2
-                }
+        public static byte[] ConvertRawTextureBeta(TextureBeta texture)
+        {
+            // Prepare DDS header information
+            if (TextureFormatDict.TryGetValue(texture.TexFormat, out var format) == false)
+            {
+                Console.WriteLine($"Unknown texture format {texture.TexFormat}");
+                return Array.Empty<byte>();
+            }
+
+            int index = DxgiList.IndexOf(format.Dxgi);
+
+            if (index == -1)
+            {
+                Console.WriteLine($"Unknown texture DXGI {texture.TexFormat}");
+                return Array.Empty<byte>();
+            }
+
+            byte[] payload = File.ReadAllBytes(texture.PayloadPath);
+
+            var fourCC = index switch
+            {
+                71 => Magic.DXT1,    // DXGI_FORMAT_BC1_UNORM
+                74 => Magic.DXT3,    // DXGI_FORMAT_BC2_UNORM
+                77 => Magic.DXT5,    // DXGI_FORMAT_BC3_UNORM
+                80 => Magic.ATI1,    // DXGI_FORMAT_BC4_UNORM
+                83 => Magic.ATI2,    // DXGI_FORMAT_BC5_UNORM
+                _ => Magic.DX10,
+            };
+
+            int count = (int)(texture.Width * texture.Height * BppCounts[index]) / 8;
+
+            // Write raw payload to a DDS file
+            int headerSize = fourCC == Magic.DX10 ? 148 : 128;  // DX10 uses an extended header
+
+            using (MemoryStream ms = new(new byte[headerSize + payload.Length]))
+            using (BinaryWriter writer = new(ms))
+            {
+                // DDS header
+                WriteDdsHeader(writer, (int)texture.Width, (int)texture.Height, count, fourCC, index);
 
                 // Payload
                 writer.BaseStream.Position = headerSize;
@@ -250,6 +274,35 @@ namespace LibFenris.DataManagement
             int remainder = number % alignment;
             if (remainder == 0) return number;
             return number + (alignment - remainder);
+        }
+
+        private static void WriteDdsHeader(BinaryWriter writer, int width, int height, int count, Magic fourCC, int index)
+        {
+            writer.Write((int)Magic.DDS);           // Magic
+
+            writer.Write(124);                      // Size
+            writer.Write(0x1 | 0x2 | 0x4 | 0x1000); // Flags
+            writer.Write(height);                   // Height
+            writer.Write(width);                    // Width
+            writer.Write(count);                    // Pitch or linear size
+            writer.Write(0);                        // Depth
+            writer.Write(1);                        // Mip map count
+
+            writer.BaseStream.Position = 76;
+            writer.Write(32);                       // ddspf size
+            writer.Write(4);                        // ddspf flags
+            writer.Write((int)fourCC);              // ddspf fourCC
+
+            // Extended DX10 header
+            if (fourCC == Magic.DX10)
+            {
+                writer.BaseStream.Position = 128;
+                writer.Write(index);                // DXGI
+                writer.Write(3);                    // Resource dimension
+                writer.Write(0);                    // Misc flag
+                writer.Write(1);                    // Array size
+                writer.Write(0);                    // Misc flag 2
+            }
         }
     }
 
