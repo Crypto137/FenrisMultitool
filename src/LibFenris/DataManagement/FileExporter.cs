@@ -42,15 +42,19 @@ namespace LibFenris.DataManagement
                     try
                     {
                         // Try to process the image: slice into frames and convert to PNG
-                        MagickImage image = new(ddsTexture);
-                        var magickRects = kvp.Value.CalculateMagickRects();
-
-                        for (int i = 0; i < kvp.Value.Frames.Length; i++)
+                        using (MagickImage image = new(ddsTexture))
                         {
-                            MagickImage slice = (MagickImage)image.Clone();
-                            slice.Crop(magickRects[i]);
-                            slice.Format = MagickFormat.Png;
-                            File.WriteAllBytes(Path.Combine(imagePath, $"{kvp.Value.Frames[i].ImageHandle}.png"), slice.ToByteArray());
+                            var magickRects = kvp.Value.CalculateMagickRects();
+
+                            for (int i = 0; i < kvp.Value.Frames.Length; i++)
+                            {
+                                using (MagickImage slice = (MagickImage)image.Clone())
+                                {
+                                    slice.Crop(magickRects[i]);
+                                    slice.Format = MagickFormat.Png;
+                                    File.WriteAllBytes(Path.Combine(imagePath, $"{kvp.Value.Frames[i].ImageHandle}.png"), slice.ToByteArray());
+                                }
+                            }
                         }
                     }
                     catch (MagickException e)
