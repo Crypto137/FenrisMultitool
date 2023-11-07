@@ -145,8 +145,8 @@
 
     public enum SnoFormatDefinition : uint
     {
-        // 0.6 used a different texture meta format
-        TextureBeta = 0x6d1931a9,
+        Texture = 0xcfe7639c,
+        TextureBeta = 0x6d1931a9,   // 0.6 used a different texture format
 
         // The first byte in StringList FormatHash seems to indicate version?
         StringList118 = 0x4fe48576,
@@ -248,7 +248,6 @@
         LevelArea = 0xa2e8593a,
         Emblem = 0xd93022f1,
         PlayerClass = 0x5e3975fa,
-        Texture = 0xcfe7639c,
         Font = 0x25797ce1,
         Movie = 0x67efd8d0,
         AudioContext = 0x95b4c61f,

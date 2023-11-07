@@ -98,9 +98,8 @@ namespace LibFenris.FileFormats
 
         public TexFrameBeta(BinaryReader reader)
         {
-            // Image handle contains white spice at the end and invalid path characters, so we process it a bit here
-            string rawImageHandle = Encoding.UTF8.GetString(reader.ReadBytes(68));
-            ImageHandle = string.Concat(rawImageHandle.Split(Path.GetInvalidFileNameChars()));
+            // Image handle in the old format is a null terminated string with 68 bytes allocated to it.
+            ImageHandle = Encoding.UTF8.GetString(reader.ReadBytes(68)).Trim('\0');
 
             U0 = reader.ReadSingle();
             V0 = reader.ReadSingle();

@@ -38,7 +38,7 @@ namespace LibFenris.DataManagement
             {
                 string stringListPath = Path.Combine(exePath, "Output");
                 if (Directory.Exists(stringListPath) == false) Directory.CreateDirectory(stringListPath);
-                FileExporter.ExportStringListDict(_stringListDict, Path.Combine(exePath, "Output"));
+                FileExporter.ExportStringListDict(_stringListDict, stringListPath);
             }
 
             if (_textureDict.Count > 0)
